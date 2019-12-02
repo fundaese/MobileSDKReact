@@ -23,20 +23,17 @@ export default class App extends React.Component{
     }
   }
 
-  testLogin = (callback) => {
-    NativeModules.CallApp.login(callback);
-  }
-  
   register(){
     NativeModules.CallApp.registerToServer(this.state.userName,this.state.password);
-    this.testLogin((testAndroid) => {         
-      console.log("test",this.state.testAndroid);
-      this.setState({testAndroid: testAndroid}); 
-    })
-    console.log("username",this.state.userName);
   }
 
-  componentDidMount(){
+  async getBoolean() {
+    try {
+      let result = await NativeModules.CallApp.login();
+      alert("RESULT:",result);
+    } catch (error) {
+      alert("Register Fail!",error);
+    }
   }
 
   render(){

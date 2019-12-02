@@ -4,10 +4,12 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
-import com.facebook.react.bridge.Callback;
+import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
+import com.facebook.react.bridge.WritableMap;
 import com.genband.mobile.NotificationStates;
 import com.genband.mobile.OnCompletionListener;
 import com.genband.mobile.RegistrationApplicationListener;
@@ -24,6 +26,7 @@ public class CallModule extends ReactContextBaseJavaModule {
     String userName;
     String userPassword;
     boolean test;
+    private Promise promise;
 
     public CallModule(@NonNull ReactApplicationContext reactContext) {
         super(reactContext);
@@ -40,6 +43,7 @@ public class CallModule extends ReactContextBaseJavaModule {
         userName = username;
         userPassword = password;
         config();
+        login(promise);
         RegistrationApplicationListener registrationListener = new RegistrationApplicationListener() {
             @Override
             public void registrationStateChanged(RegistrationStates state) {
@@ -66,22 +70,27 @@ public class CallModule extends ReactContextBaseJavaModule {
         registrationService.registerToServer(subscribeServices, 3600, new OnCompletionListener() {
             @Override
             public void onSuccess() {
-                Log.d("fundaaa", "registerOkey");
+                Log.d("fundaaa", "registerSuccess");
                 test = true;
             }
             @Override
             public void onFail(MobileError mobileError) {
+                Log.d("fundaaa", "registerFail");
                 test = false;
-                System.out.println(test);
             }
         });
     }
 
     @ReactMethod
-    public void login(Callback callback){
-        callback.invoke(test);
+    public void login(Promise promise){
+        try {
+            WritableMap map = Arguments.createMap();
+            map.putBoolean("test",test);
+            promise.resolve(map);
+        } catch (Exception mobileError) {
+            promise.reject("Error", mobileError);
+        }
     }
-
 
     public void config() {
         Configuration configuration = Configuration.getInstance();
