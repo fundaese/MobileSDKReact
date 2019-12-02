@@ -181,8 +181,10 @@ android {
 }
 
 dependencies {
+    implementation project(':react-native-gesture-handler')
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation 'com.facebook.react:react-native:+'
+
     // From node_modules
     if (enableHermes) {
         def hermesPath = "../../node_modules/hermes-engine/android/";

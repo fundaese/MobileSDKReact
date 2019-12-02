@@ -2,11 +2,8 @@ import React, {Component} from 'react';
 import {
   View,
   StyleSheet,
-  Text,
   Button,
   NativeModules,
-  TouchableOpacity,
-  NativeEventEmitter,
   TextInput
 } from 'react-native';
 
@@ -17,23 +14,20 @@ export default class App extends React.Component{
     super(props);
 
     this.state = {
-      userName: "Please enter your username",
+      userName: "",
       password: "",
-      testAndroid: ""
     }
+
+    const { navigate } = this.props.navigation;
   }
 
   register(){
-    NativeModules.CallApp.registerToServer(this.state.userName,this.state.password);
-  }
-
-  async getBoolean() {
-    try {
-      let result = await NativeModules.CallApp.login();
-      alert("RESULT:",result);
-    } catch (error) {
-      alert("Register Fail!",error);
-    }
+    NativeModules.CallApp.registerToServer(this.state.userName,this.state.password)
+    .then(function(test) {
+        alert("Success!");
+      }).catch(error => 
+        { alert("Register Fail!") 
+      });    
   }
 
   render(){
@@ -51,9 +45,7 @@ export default class App extends React.Component{
                        title="LOGIN"
                        onPress={this.register.bind(this)}
                        buttonStyle={styles.button}>
-
       </Button>
-     {/* <Text>{this.state.userName}</Text>  */}
     </View>
   );
 }

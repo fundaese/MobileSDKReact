@@ -10,6 +10,7 @@ import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.uimanager.IllegalViewOperationException;
 import com.genband.mobile.NotificationStates;
 import com.genband.mobile.OnCompletionListener;
 import com.genband.mobile.RegistrationApplicationListener;
@@ -27,6 +28,7 @@ public class CallModule extends ReactContextBaseJavaModule {
     String userPassword;
     boolean test;
     private Promise promise;
+    private static final String E_LAYOUT_ERROR = "E_LAYOUT_ERROR";
 
     public CallModule(@NonNull ReactApplicationContext reactContext) {
         super(reactContext);
@@ -39,11 +41,10 @@ public class CallModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    private void registerToServer(String username,String password) {
+    private void registerToServer(String username,String password,Promise promise) {
         userName = username;
         userPassword = password;
         config();
-        login(promise);
         RegistrationApplicationListener registrationListener = new RegistrationApplicationListener() {
             @Override
             public void registrationStateChanged(RegistrationStates state) {
@@ -71,25 +72,17 @@ public class CallModule extends ReactContextBaseJavaModule {
             @Override
             public void onSuccess() {
                 Log.d("fundaaa", "registerSuccess");
-                test = true;
+                WritableMap map = Arguments.createMap();
+                map.putBoolean("test",test);
+                promise.resolve(map);
             }
             @Override
             public void onFail(MobileError mobileError) {
                 Log.d("fundaaa", "registerFail");
                 test = false;
+                promise.reject("Error", String.valueOf(mobileError));
             }
         });
-    }
-
-    @ReactMethod
-    public void login(Promise promise){
-        try {
-            WritableMap map = Arguments.createMap();
-            map.putBoolean("test",test);
-            promise.resolve(map);
-        } catch (Exception mobileError) {
-            promise.reject("Error", mobileError);
-        }
     }
 
     public void config() {
