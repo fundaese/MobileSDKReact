@@ -4,10 +4,8 @@ import {
   StyleSheet,
   Button,
   NativeModules,
-  TextInput
+  TextInput,
 } from 'react-native';
-
-const inputModule = NativeModules.CallApp.processData;
 
 export default class App extends React.Component{
   constructor(props) {
@@ -17,23 +15,24 @@ export default class App extends React.Component{
       userName: "",
       password: "",
     }
-
-    const { navigate } = this.props.navigation;
   }
 
   register(){
-    NativeModules.CallApp.registerToServer(this.state.userName,this.state.password)
-    .then(function(test) {
-        alert("Success!");
-      }).catch(error => 
-        { alert("Register Fail!") 
+    const {navigate} = this.props.navigation;
+    NativeModules.RegisterModule.registerToServer(this.state.userName,this.state.password)
+      .then(function(test) {
+        alert("Register Success!"),
+        navigate("CallScreen")
+      }).catch(() => 
+      { 
+        alert("Register Fail!") 
       });    
   }
 
-  render(){
+  render(){    
   return (
     <View style = {styles.container}>
-      <TextInput style={styles.textInput} placeholder="UserName" keyboardType= "email-address" 
+      <TextInput style={styles.textInput} placeholder="Username" keyboardType= "email-address" 
         onChangeText={(text) => this.setState({userName: text})}
       />
       <TextInput style={styles.textInput} placeholder="Enter your password" 
