@@ -4,8 +4,16 @@ import Register from './Register';
 import CallScreen from './CallScreen';
 
 const AppNavigator = createStackNavigator({
-  Register: { screen: Register },
-  CallScreen: {screen: CallScreen},
+  Register: { 
+    screen: Register,
+    navigationOptions: {
+      header: null,
+    },
+  },
+  CallScreen: {
+    screen: CallScreen
+    
+  },
 },
 {
     initialRouteName: "Register"

@@ -3,13 +3,13 @@ import {
   View,
   StyleSheet,
   Text,
-  Button,
   NativeModules,
   TouchableOpacity,
   NativeEventEmitter,
   TextInput,
   Dimensions,
-  Image 
+  Image,
+  Button
 } from 'react-native';
 
 import faker from 'faker';
@@ -78,13 +78,12 @@ export default class App extends React.Component{
   }
 
   render(){
-  return (
+    return (
     <View style = {styles.container}>
       <Button  title="Logout"
                onPress={this.unreg.bind(this)}
                buttonStyle={styles.button}>
       </Button>
-
       <RecyclerListView
           style={{flex: 1}}
           rowRenderer={this.rowRenderer}

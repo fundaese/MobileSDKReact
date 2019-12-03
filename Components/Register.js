@@ -2,9 +2,11 @@ import React, {Component} from 'react';
 import {
   View,
   StyleSheet,
-  Button,
   NativeModules,
   TextInput,
+  Text,
+  Image,
+  TouchableOpacity
 } from 'react-native';
 
 export default class App extends React.Component{
@@ -32,19 +34,24 @@ export default class App extends React.Component{
   render(){    
   return (
     <View style = {styles.container}>
-      <TextInput style={styles.textInput} placeholder="Username" keyboardType= "email-address" 
+      <View style = {styles.logoContainer}>
+        <Image style = {styles.logo}
+            source={require('../Components/images/callapplogo.png')}>
+        </Image>
+      </View>
+      <TextInput style={styles.input} placeholder="Username" keyboardType= "email-address" 
+        placeholderTextColor='rgba(255,255,255,0.8)' returnKeyType='next'
+        onSubmitEditing={() => this.refs.txtPassword.focus()}
         onChangeText={(text) => this.setState({userName: text})}
       />
-      <TextInput style={styles.textInput} placeholder="Enter your password" 
-          keyboardType="default" secureTextEntry= {true}
+      <TextInput style={styles.input} placeholder="Enter your password" placeholderTextColor='rgba(255,255,255,0.8)'
+          keyboardType="default" secureTextEntry= {true} ref={"txtPassword"}
           onChangeText={(text) => this.setState({password: text})}
       />
 
-      <Button color="#841584"
-                       title="LOGIN"
-                       onPress={this.register.bind(this)}
-                       buttonStyle={styles.button}>
-      </Button>
+      <TouchableOpacity style={styles.buttonContainer} onPress={this.register.bind(this)}>
+            <Text style = {styles.buttonText}>SIGN IN</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -53,8 +60,27 @@ export default class App extends React.Component{
 const styles = StyleSheet.create({
   container: {
     flex:1,
+    flexDirection: 'column',
     justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: 'rgb(32,53,70)',
+  },
+  logoContainer: {
+    alignItems: 'center'
+  },
+  logo: {
+    //alignItems: 'center',
+    justifyContent: 'center',
+    width: 128,
+    height: 56,
+    marginBottom: 20,
+    borderRadius: 100,
+  },
+  title: {
+    color: '#f7c744',
+    fontSize: 18,
+    textAlign: 'center',
+    marginTop: 5,
+    opacity: 0.9
   },
   textInput: {
     height: 40,
@@ -68,5 +94,30 @@ const styles = StyleSheet.create({
   button: {
     width: 100,
     backgroundColor: "yellow",
+  },
+  infoContainer: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: 200,
+    padding: 20
+  },
+  input: {
+    height: 40,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    paddingHorizontal: 10,
+    color: '#FFF',
+    marginBottom: 20
+  },
+  buttonContainer: {
+    backgroundColor: '#f7c744',
+    paddingVertical: 15
+  },
+  buttonText: {
+    textAlign: 'center',
+    color: 'rgb(32,53,70)',
+    fontWeight: 'bold',
+    fontSize: 18
   }
 });
