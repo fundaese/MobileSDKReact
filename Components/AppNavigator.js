@@ -11,8 +11,10 @@ const AppNavigator = createStackNavigator({
     },
   },
   CallScreen: {
-    screen: CallScreen
-    
+    screen: CallScreen,
+    navigationOptions: {
+      header: null,
+    },
   },
 },
 {

@@ -1,7 +1,11 @@
 package com.sdkproject.CallApp;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 
+import com.facebook.react.ReactApplication;
+import com.facebook.react.ReactNativeHost;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
@@ -16,9 +20,12 @@ import com.genband.mobile.RegistrationStates;
 import com.genband.mobile.ServiceProvider;
 import com.genband.mobile.api.services.call.CallApplicationListener;
 import com.genband.mobile.api.services.call.CallInterface;
+import com.genband.mobile.api.services.call.CallServiceInterface;
 import com.genband.mobile.api.services.call.IncomingCallInterface;
+import com.genband.mobile.api.services.call.OutgoingCallCreateInterface;
 import com.genband.mobile.api.services.call.OutgoingCallInterface;
 import com.genband.mobile.api.utilities.MobileError;
+import com.genband.mobile.api.utilities.exception.MobileException;
 import com.genband.mobile.impl.services.call.CallState;
 import com.genband.mobile.impl.services.call.MediaAttributes;
 
@@ -27,9 +34,15 @@ import java.util.Map;
 public class CallModule extends ReactContextBaseJavaModule implements CallApplicationListener {
 
     public boolean test;
+    CallServiceInterface callService;
+    CallInterface call;
 
     public CallModule(@NonNull ReactApplicationContext reactContext) {
         super(reactContext);
+
+        Log.i("funda","deneme");
+
+
     }
 
     @NonNull
@@ -72,6 +85,33 @@ public class CallModule extends ReactContextBaseJavaModule implements CallApplic
             public void onFail(MobileError mobileError) {
                 test = false;
                 promise.reject("Error", String.valueOf(mobileError));
+            }
+        });
+    }
+
+    @ReactMethod
+    public void callExample(String name) {
+        String terminatorAddress = name ;
+        Log.i("terminatoradress",terminatorAddress);
+
+        ServiceProvider serviceProvider = ServiceProvider.getInstance(getReactApplicationContext());
+        callService = serviceProvider.getCallService();
+        try {
+            callService.setCallApplication(this);
+        } catch (MobileException e) {
+            e.printStackTrace();
+        }
+
+        callService.createOutgoingCall(terminatorAddress, this, new OutgoingCallCreateInterface() {
+            @Override
+            public void callCreated(OutgoingCallInterface callInterface) {
+                call = callInterface;
+                callInterface.establishAudioCall();
+                Log.i("callCreate","call");
+            }
+            @Override
+            public void callCreationFailed(MobileError error) {
+                Log.d("Funda","CallFAİL");
             }
         });
     }
@@ -260,4 +300,5 @@ public class CallModule extends ReactContextBaseJavaModule implements CallApplic
     public void notifyCallProgressChange(CallInterface callInterface) {
 
     }
+
 }

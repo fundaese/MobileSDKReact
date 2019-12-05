@@ -184,7 +184,7 @@ dependencies {
     implementation project(':react-native-gesture-handler')
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation 'com.facebook.react:react-native:+'
-
+    implementation 'com.kandy.mobile:kandylinkmobilesdk:5.0.0'
     // From node_modules
     if (enableHermes) {
         def hermesPath = "../../node_modules/hermes-engine/android/";
@@ -193,7 +193,6 @@ dependencies {
     } else {
         implementation jscFlavor
     }
-    implementation files('C:/Users/user/Desktop/ReactNative/SdkProject/android/.idea/libraries/libs/MobileSDK_4.5.8.jar')
 }
 
 // Run this once to be able to run the application with BUCK

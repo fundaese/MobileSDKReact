@@ -10,13 +10,22 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "deprecated-react-native-listview": "0.0.6",
     "faker": "^4.1.0",
     "jetifier": "^1.6.5",
+    "native-base": "^2.13.8",
+    "prop-types": "^15.7.2",
     "react": "16.9.0",
     "react-native": "0.61.5",
     "react-native-button": "^2.4.0",
+    "react-native-draggable-flatlist": "^1.1.9",
+    "react-native-elements": "^1.2.7",
     "react-native-gesture-handler": "^1.5.2",
+    "react-native-modalbox": "^2.0.0",
+    "react-native-navigation-bar": "^0.2.1",
+    "react-native-reanimated": "^1.4.0",
     "react-navigation": "^4.0.10",
+    "react-navigation-drawer": "^2.3.3",
     "react-navigation-stack": "^1.10.3",
     "recyclerlistview": "^2.0.10-beta.3"
   },
