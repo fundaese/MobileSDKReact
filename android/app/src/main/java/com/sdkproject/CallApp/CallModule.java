@@ -4,14 +4,16 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
-import com.facebook.react.ReactApplication;
-import com.facebook.react.ReactNativeHost;
 import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
+import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
+import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.genband.mobile.NotificationStates;
 import com.genband.mobile.OnCompletionListener;
 import com.genband.mobile.RegistrationApplicationListener;
@@ -31,18 +33,30 @@ import com.genband.mobile.impl.services.call.MediaAttributes;
 
 import java.util.Map;
 
+import javax.annotation.Nullable;
+
 public class CallModule extends ReactContextBaseJavaModule implements CallApplicationListener {
 
     public boolean test;
     CallServiceInterface callService;
     CallInterface call;
+    private ReactContext mReactContext;
+    private ServiceProvider serviceProvider;
+    public boolean incomingCall=false;
+
 
     public CallModule(@NonNull ReactApplicationContext reactContext) {
         super(reactContext);
+        mReactContext = reactContext;
 
-        Log.i("funda","deneme");
 
-
+        serviceProvider = ServiceProvider.getInstance(getReactApplicationContext());
+        callService = serviceProvider.getCallService();
+        try {
+            callService.setCallApplication(this);
+        } catch (MobileException e) {
+            e.printStackTrace();
+        }
     }
 
     @NonNull
@@ -94,14 +108,6 @@ public class CallModule extends ReactContextBaseJavaModule implements CallApplic
         String terminatorAddress = name ;
         Log.i("terminatoradress",terminatorAddress);
 
-        ServiceProvider serviceProvider = ServiceProvider.getInstance(getReactApplicationContext());
-        callService = serviceProvider.getCallService();
-        try {
-            callService.setCallApplication(this);
-        } catch (MobileException e) {
-            e.printStackTrace();
-        }
-
         callService.createOutgoingCall(terminatorAddress, this, new OutgoingCallCreateInterface() {
             @Override
             public void callCreated(OutgoingCallInterface callInterface) {
@@ -116,14 +122,54 @@ public class CallModule extends ReactContextBaseJavaModule implements CallApplic
         });
     }
 
+    @ReactMethod
     @Override
     public void incomingCall(IncomingCallInterface ıncomingCallInterface) {
+        this.call = ıncomingCallInterface;
+        ıncomingCallInterface.acceptCall(false);
+        incomingCall = true;
 
+        WritableMap params = Arguments.createMap();
+        params.putString("callerName",call.getCallerAddress());
+
+        Log.i("fnd", "incomingcall");
+        Log.i("funda",call.getCallerAddress());
+
+        sendEvent(mReactContext, params);
+    }
+
+    private void sendEvent(ReactContext reactContext, @Nullable WritableMap params) {
+        reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                .emit("incomingCall", params);
     }
 
     @Override
     public void callStatusChanged(CallInterface callInterface, CallState callState) {
 
+        switch (callState.getType()) {
+            case INITIAL:
+                break;
+            case SESSION_PROGRESS:
+                break;
+            case ENDED:
+                break;
+            case RINGING:
+                break;
+            case IN_CALL:
+                break;
+            case DIALING:
+                break;
+            case ANSWERING:
+                break;
+            case UNKNOWN:
+                break;
+            case ON_HOLD:
+                break;
+            case ON_DOUBLE_HOLD:
+                break;
+            default:
+                break;
+        }
     }
 
     @Override

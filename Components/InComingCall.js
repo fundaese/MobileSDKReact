@@ -9,52 +9,21 @@ import {
   TouchableOpacity
 } from 'react-native';
 
+
 export default class App extends React.Component{
   constructor(props) {
     super(props);
 
     this.state = {
-      userName: "",
-      password: "",
-    }
+        callername: this.props.navigation.state.params.callerName,
+    };
   }
-
-  register(){
-    const {navigate} = this.props.navigation;
-    const { userName, password } = this.state;
-
-    NativeModules.RegisterModule.registerToServer(userName, password)
-      .then(function(test) {
-        alert("Register Success!"),
-        navigate("CallScreen")
-      }).catch(() => 
-      { 
-        alert("Register Fail!") 
-      });    
-  }
-
 
   render(){    
   return (
     <View style = {styles.container}>
-      <View style = {styles.logoContainer}>
-        <Image style = {styles.logo}
-            source={require('../Components/images/callapplogo.png')}>
-        </Image>
-      </View>
-      <TextInput style={styles.input} placeholder="Username" keyboardType= "email-address" 
-        placeholderTextColor='rgba(255,255,255,0.8)' returnKeyType='next'
-        onSubmitEditing={() => this.refs.txtPassword.focus()}
-        onChangeText={(text) => this.setState({userName: text})}
-      />
-      <TextInput style={styles.input} placeholder="Enter your password" placeholderTextColor='rgba(255,255,255,0.8)'
-          keyboardType="default" secureTextEntry= {true} ref={"txtPassword"}
-          onChangeText={(text) => this.setState({password: text})}
-      />
-
-      <TouchableOpacity style={styles.buttonContainer} onPress={this.register.bind(this)}>
-            <Text style = {styles.buttonText}>SIGN IN</Text>
-      </TouchableOpacity>
+        <Text>InComingCall PAGE</Text>
+            <Text>{this.state.callername}</Text>
     </View>
   );
 }
@@ -71,7 +40,6 @@ const styles = StyleSheet.create({
     alignItems: 'center'
   },
   logo: {
-    //alignItems: 'center',
     justifyContent: 'center',
     width: 128,
     height: 56,
@@ -122,5 +90,16 @@ const styles = StyleSheet.create({
     color: 'rgb(32,53,70)',
     fontWeight: 'bold',
     fontSize: 18
-  }
+  },
+  textStyle:{
+    color: '#f7c744',
+    fontSize: 30,
+    fontWeight: 'bold',
+    lineHeight: 40,
+    textAlign: 'center',
+    fontFamily: 'sans-serif',
+    textShadowRadius: 4,
+    textShadowOffset: {width: 2, height: 2},
+    textAlignVertical : 'top',
+  },
 });

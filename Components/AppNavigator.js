@@ -2,6 +2,8 @@ import { createStackNavigator } from 'react-navigation-stack';
 
 import Register from './Register';
 import CallScreen from './CallScreen';
+import OutGoingCall from './OutGoingCall';
+import InComingCall from './InComingCall';
 
 const AppNavigator = createStackNavigator({
   Register: { 
@@ -12,6 +14,18 @@ const AppNavigator = createStackNavigator({
   },
   CallScreen: {
     screen: CallScreen,
+    navigationOptions: {
+      header: null,
+    },
+  },
+  OutGoingCall: {
+    screen: OutGoingCall,
+    navigationOptions: {
+      header: null,
+    },
+  },
+  InComingCall: {
+    screen: InComingCall,
     navigationOptions: {
       header: null,
     },

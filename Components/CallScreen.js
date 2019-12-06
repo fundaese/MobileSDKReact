@@ -29,6 +29,24 @@ class FlatListItem extends Component{
 }
 
 export default class BasicFlatList extends Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      callerName: ""
+    }
+  }
+  
+ componentDidMount(){
+  const {navigate} = this.props.navigation;
+  const { callerName } = this.state;
+  const eventEmitter = new NativeEventEmitter(NativeModules.SdkProject); //event listener
+  eventEmitter.addListener('incomingCall', (event) => {
+    navigate("InComingCall",{callerName});
+    console.log(event.callerName);
+  })
+}
+
   unreg(){
     const {navigate} = this.props.navigation;
     NativeModules.CallModule.unregister()
@@ -40,17 +58,14 @@ export default class BasicFlatList extends Component {
     });    
   }
 
-  startCall(userEmail){
+  startCall(userEmail,name){
+    const {navigate} = this.props.navigation;
     console.log(userEmail);
     NativeModules.CallModule.callExample(userEmail);
+    navigate("OutGoingCall",{name})
   }
 
-  getItem(item) {
-    //Function for click on an item
-    alert(item);
-  }
-
-    render(){
+  render(){
         return(
             <View style={{flex:1,marginTop:22}}>
                 <Text style={styles.textStyle}>CALL LIST</Text>
@@ -58,7 +73,7 @@ export default class BasicFlatList extends Component {
                     data={flatListData}
                      renderItem={({item,index}) => {
                          return (
-                          <TouchableOpacity onPress={() => this.startCall(item.mail) }>
+                          <TouchableOpacity onPress={() => this.startCall(item.mail,item.name) }>
                             <FlatListItem item={item} index={index} />
                           </TouchableOpacity>
                          )
