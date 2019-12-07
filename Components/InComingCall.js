@@ -6,7 +6,7 @@ import {
   TextInput,
   Text,
   Image,
-  TouchableOpacity
+  TouchableOpacity, NativeEventEmitter,
 } from 'react-native';
 
 
@@ -15,15 +15,44 @@ export default class App extends React.Component{
     super(props);
 
     this.state = {
-        callername: this.props.navigation.state.params.callerName,
+         callername: this.props.navigation.state.params.callername,
     };
   }
+
+//   componentDidMount(){
+//     const eventEmitter = new NativeEventEmitter(NativeModules.SdkProject); //event listener
+  
+//     eventEmitter.addListener('callState', (event) => {
+
+//     })
+//   }
+
+  startCall(){
+    NativeModules.CallModule.callStart();  
+  }
+
+  stopCall(){
+    const {navigate} = this.props.navigation;
+    NativeModules.CallModule.stopCall();  
+    navigate("CallScreen")  
+}
 
   render(){    
   return (
     <View style = {styles.container}>
-        <Text>InComingCall PAGE</Text>
-            <Text>{this.state.callername}</Text>
+        <Text style={styles.textStyle}>{this.state.callername}</Text>
+        <Text style={styles.textStyle}>{this.state.callername}</Text>
+        <Text style={styles.textStyle}>{this.state.callername}</Text>
+
+        <View style={styles.buttons}> 
+            <TouchableOpacity style={styles.buttonAccept} onPress={this.startCall.bind(this)}>
+                        <Text style = {styles.buttonText}>Accept</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.buttonEnd} onPress={this.stopCall.bind(this)}>
+                        <Text style = {styles.buttonText}>END</Text>
+            </TouchableOpacity>
+        </View>
+       
     </View>
   );
 }
@@ -62,9 +91,11 @@ const styles = StyleSheet.create({
     borderWidth: 3,
     borderRadius: 15
   },
-  button: {
-    width: 100,
-    backgroundColor: "yellow",
+  buttons: {
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginTop: 70
   },
   infoContainer: {
     position: 'absolute',
@@ -81,9 +112,17 @@ const styles = StyleSheet.create({
     color: '#FFF',
     marginBottom: 20
   },
-  buttonContainer: {
-    backgroundColor: '#f7c744',
-    paddingVertical: 15
+  buttonAccept: {
+    backgroundColor: 'green',
+    paddingVertical: 15,
+    borderRadius: 100,
+    width: 70
+  },
+  buttonEnd: {
+    backgroundColor: 'red',
+    paddingVertical: 15,
+    borderRadius: 100,
+    width: 70
   },
   buttonText: {
     textAlign: 'center',

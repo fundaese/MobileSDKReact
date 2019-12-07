@@ -6,7 +6,7 @@ import {
   TextInput,
   Text,
   Image,
-  TouchableOpacity
+  TouchableOpacity, NativeEventEmitter
 } from 'react-native';
 
 
@@ -19,11 +19,32 @@ export default class App extends React.Component{
     };
   }
 
+  stopCall(){
+    const {navigate} = this.props.navigation;
+    NativeModules.CallModule.stopCall();  
+    navigate("CallScreen")
+  }
+
+  // componentDidMount(){
+  //   const eventEmitter = new NativeEventEmitter(NativeModules.SdkProject); //event listener
+
+  //   eventEmitter.addListener('callState', (event) => {
+
+  //   })
+  // }
+
   render(){    
   return (
     <View style = {styles.container}>
         <Text style={styles.textStyle}>{this.state.calleeName}</Text>
         <Text style={styles.textStyle}>{this.state.calleeName}</Text>
+        <Text style={styles.textStyle}>{this.state.calleeName}</Text>
+
+        <View style={styles.buttons}> 
+            <TouchableOpacity style={styles.buttonEnd} onPress={this.stopCall.bind(this)}>
+                        <Text style = {styles.buttonText}>END</Text>
+            </TouchableOpacity>
+        </View>
     </View>
   );
 }
@@ -45,6 +66,12 @@ const styles = StyleSheet.create({
     height: 56,
     marginBottom: 20,
     borderRadius: 100,
+  },
+  buttons: {
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginTop: 70
   },
   title: {
     color: '#f7c744',
@@ -81,9 +108,11 @@ const styles = StyleSheet.create({
     color: '#FFF',
     marginBottom: 20
   },
-  buttonContainer: {
-    backgroundColor: '#f7c744',
-    paddingVertical: 15
+  buttonEnd: {
+    backgroundColor: 'red',
+    paddingVertical: 15,
+    borderRadius: 100,
+    width: 70
   },
   buttonText: {
     textAlign: 'center',

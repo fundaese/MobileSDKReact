@@ -123,14 +123,27 @@ public class CallModule extends ReactContextBaseJavaModule implements CallApplic
     }
 
     @ReactMethod
+    public void callStart(){
+        IncomingCallInterface ıncomingCallInterface = (IncomingCallInterface) ServiceProvider.getInstance(getReactApplicationContext()).getCallService().getActiveCalls().firstObject();
+        this.call = ıncomingCallInterface;
+        ıncomingCallInterface.acceptCall(false);
+    }
+
+    @ReactMethod
+    public void stopCall() throws MobileException {
+        if(call != null) {
+            call.endCall();
+        }
+    }
+
+    @ReactMethod
     @Override
     public void incomingCall(IncomingCallInterface ıncomingCallInterface) {
         this.call = ıncomingCallInterface;
-        ıncomingCallInterface.acceptCall(false);
         incomingCall = true;
 
         WritableMap params = Arguments.createMap();
-        params.putString("callerName",call.getCallerAddress());
+        params.putString("callerName",call.getCallerName());
 
         Log.i("fnd", "incomingcall");
         Log.i("funda",call.getCallerAddress());
@@ -146,26 +159,48 @@ public class CallModule extends ReactContextBaseJavaModule implements CallApplic
     @Override
     public void callStatusChanged(CallInterface callInterface, CallState callState) {
 
+        this.call = callInterface;
+
+        WritableMap params = Arguments.createMap();
+        params.putString("callState",callState.getType().toString());
+
+        sendEvent(mReactContext, params);
+
+        Log.i("callState", callState.getType().toString());
+
         switch (callState.getType()) {
             case INITIAL:
+                Log.i("callState", callState.getType().toString());
                 break;
             case SESSION_PROGRESS:
+                Log.i("callState", callState.getType().toString());
                 break;
             case ENDED:
+                Log.i("callState", callState.getType().toString());
                 break;
             case RINGING:
+                Log.i("callState", callState.getType().toString());
                 break;
             case IN_CALL:
+                Log.i("callState", callState.getType().toString());
                 break;
             case DIALING:
+                Log.i("callState", callState.getType().toString());
                 break;
             case ANSWERING:
+                Log.i("callState", callState.getType().toString());
                 break;
             case UNKNOWN:
+                Log.i("callState", callState.getType().toString());
                 break;
             case ON_HOLD:
+                Log.i("callState", callState.getType().toString());
                 break;
             case ON_DOUBLE_HOLD:
+                Log.i("callState", callState.getType().toString());
+                break;
+            case REMOTELY_HELD:
+                Log.i("callState", callState.getType().toString());
                 break;
             default:
                 break;

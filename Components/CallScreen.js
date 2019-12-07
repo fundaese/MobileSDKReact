@@ -28,22 +28,20 @@ class FlatListItem extends Component{
     }
 }
 
-export default class BasicFlatList extends Component {
+export default class CallScreen extends Component {
   constructor(props) {
     super(props);
 
-    this.state = {
-      callerName: ""
-    }
+
   }
   
  componentDidMount(){
   const {navigate} = this.props.navigation;
-  const { callerName } = this.state;
   const eventEmitter = new NativeEventEmitter(NativeModules.SdkProject); //event listener
+
   eventEmitter.addListener('incomingCall', (event) => {
-    navigate("InComingCall",{callerName});
-    console.log(event.callerName);
+    let callername = event.callerName
+    navigate("InComingCall",{callername});
   })
 }
 
