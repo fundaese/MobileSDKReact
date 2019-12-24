@@ -6,40 +6,130 @@ import {
   TextInput,
   Text,
   Image,
-  TouchableOpacity, NativeEventEmitter
+  TouchableOpacity, NativeEventEmitter, ToastAndroid, Modal
 } from 'react-native';
 
+const Toast = (props) => {
+  if (props.visible) {
+    ToastAndroid.showWithGravityAndOffset(
+      props.message,
+      ToastAndroid.LONG,
+      ToastAndroid.BOTTOM,
+      25,
+      50,
+    );
+    return null;
+  }
+  return null;
+};
 
 export default class App extends React.Component{
   constructor(props) {
     super(props);
 
+    this.options = ["adem1@spidr.com","adem2@spidr.com","adem3@spidr.com","adem4@spidr.com","adem5@spidr.com",
+    "adem6@spidr.com","adem7@spidr.com","adem8@spidr.com","adem9@spidr.com"]
+
     this.state = {
       calleeName: this.props.navigation.state.params.name,
+      eventType: "",
+      visible: false,
+      disabled: false,
+      opacity: 0.1
     };
   }
+
+  hideToast = () => {
+    this.setState({
+      visible: false,
+    });
+  };
 
   stopCall(){
     const {navigate} = this.props.navigation;
     NativeModules.CallModule.stopCall();  
+    this.setState({eventType: "ENDED"});
     navigate("CallScreen")
   }
 
-  // componentDidMount(){
-  //   const eventEmitter = new NativeEventEmitter(NativeModules.SdkProject); //event listener
+  muteCall(){
+    NativeModules.CallModule.mute();  
+    this.setState({disabled:true})
+  }
 
-  //   eventEmitter.addListener('callState', (event) => {
+  holdCall(){
+    const {navigate} = this.props.navigation;
+    NativeModules.CallModule.hold();  
+    this.setState({disabled:true})
+  }
 
-  //   })
-  // }
+  speakerOn(){
+    NativeModules.CallModule.speaker();  
+  }
+
+  transferCall(){
+    NativeModules.CallModule.transferCall();  
+    this.setState({disabled:true})
+  }
+
+  componentDidMount(){
+    const eventEmitter = new NativeEventEmitter(NativeModules.SdkProject); //event listener
+    const {navigate} = this.props.navigation;
+
+    
+      eventEmitter.addListener('callstate', (event) => {
+          console.log([Object.values(event)[0]]);
+          const status = [Object.values(event)[0]];
+
+          if(status == "ENDED"){
+            navigate("CallScreen");
+          }
+
+          this.setState({eventType: status});
+      })
+
+      eventEmitter.addListener('event', (event) => {
+        this.setState(
+          {visible: true,disabled:false },
+          () => {this.hideToast();},
+        );
+      })
+
+      eventEmitter.addListener('failEvent', (event) => {
+        
+  })
+
+  }
 
   render(){    
   return (
-    <View style = {styles.container}>
-        <Text style={styles.textStyle}>{this.state.calleeName}</Text>
-        <Text style={styles.textStyle}>{this.state.calleeName}</Text>
-        <Text style={styles.textStyle}>{this.state.calleeName}</Text>
+    <View style = {styles.container}>      
+        <Toast visible={this.state.visible} message="Success!" />
 
+        <Text style={styles.textStyle}>{this.state.calleeName}</Text>
+        <Text style={styles.textStyle}>{this.state.eventType}</Text>
+      
+        {this.state.eventType == "IN_CALL" || this.state.eventType == "ON_HOLD" || this.state.eventType == "REMOTELY_HELD" ?
+        <View style= {styles.button}>
+
+            <TouchableOpacity disabled={this.state.disabled} style={styles.threeButton} onPress={this.muteCall.bind(this)}>
+                      <Text style={styles.buttonText}>Mute Call</Text>
+
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.threeButton} onPress={this.speakerOn.bind(this)}>
+                      <Text style={styles.buttonText}>Speaker</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity  disabled={this.state.disabled}  style={styles.threeButton} onPress={this.holdCall.bind(this)}>
+                      <Text style={styles.buttonText}>HoldCall</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity  disabled={this.state.disabled} style={styles.threeButton} onPress={this.transferCall.bind(this)}>
+                      <Text style={styles.buttonText}>Transfer</Text>
+            </TouchableOpacity>
+        </View> : null}
+        
         <View style={styles.buttons}> 
             <TouchableOpacity style={styles.buttonEnd} onPress={this.stopCall.bind(this)}>
                         <Text style = {styles.buttonText}>END</Text>
@@ -89,10 +179,7 @@ const styles = StyleSheet.create({
     borderWidth: 3,
     borderRadius: 15
   },
-  button: {
-    width: 100,
-    backgroundColor: "yellow",
-  },
+  
   infoContainer: {
     position: 'absolute',
     left: 0,
@@ -118,7 +205,8 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: 'rgb(32,53,70)',
     fontWeight: 'bold',
-    fontSize: 18
+    fontSize: 18,
+    marginBottom: 10
   },
   textStyle:{
     color: '#f7c744',
@@ -130,5 +218,22 @@ const styles = StyleSheet.create({
     textShadowRadius: 4,
     textShadowOffset: {width: 2, height: 2},
     textAlignVertical : 'top',
+  },
+  threeButton:{
+    flexDirection:'row',
+    justifyContent:'space-between',
+    paddingVertical: 15,
+    borderRadius: 100,
+    width: 70,
+    height:70,
+    backgroundColor: '#c8d6e5',
+    marginRight: 10,
+    alignItems: 'center'
+  },
+  button: {
+    flexDirection:'row',
+    justifyContent:'space-between',
+    paddingVertical: 15,
+    marginTop: 20
   },
 });

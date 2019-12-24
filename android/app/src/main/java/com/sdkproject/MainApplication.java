@@ -5,6 +5,7 @@ import android.content.Context;
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
 import com.sdkproject.CallApp.CallModulePackage;
+import com.sdkproject.CallApp.VideoViewPackage;
 import com.swmansion.gesturehandler.react.RNGestureHandlerPackage;
 import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactPackage;
@@ -31,7 +32,8 @@ public class MainApplication extends Application implements ReactApplication {
                     new MainReactPackage(),
             new RNGestureHandlerPackage(),
                     new RegisterPackage(),
-                    new CallModulePackage());
+                    new CallModulePackage(),
+                    new VideoViewPackage());
         }
 
         @Override

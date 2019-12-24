@@ -4,6 +4,9 @@ import Register from './Register';
 import CallScreen from './CallScreen';
 import OutGoingCall from './OutGoingCall';
 import InComingCall from './InComingCall';
+import VideoOutgoingCall from './VideoOutgoingCall';
+import VideoIncomingCall from './VideoIncomingCall';
+
 
 const AppNavigator = createStackNavigator({
   Register: { 
@@ -30,6 +33,18 @@ const AppNavigator = createStackNavigator({
       header: null,
     },
   },
+  VideoOutgoingCall: {
+    screen: VideoOutgoingCall,
+    navigationOptions: {
+      header: null,
+    },
+  },
+  VideoIncomingCall: {
+    screen: VideoIncomingCall,
+    navigationOptions: {
+      header: null,
+    },
+  }
 },
 {
     initialRouteName: "Register"

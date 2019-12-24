@@ -6,8 +6,22 @@ import {
   TextInput,
   Text,
   Image,
-  TouchableOpacity
+  TouchableOpacity,ScrollView, ToastAndroid
 } from 'react-native';
+
+const Toast = (props) => {
+  if (props.visible) {
+    ToastAndroid.showWithGravityAndOffset(
+      props.message,
+      ToastAndroid.LONG,
+      ToastAndroid.BOTTOM,
+      25,
+      50,
+    );
+    return null;
+  }
+  return null;
+};
 
 export default class App extends React.Component{
   constructor(props) {
@@ -16,30 +30,46 @@ export default class App extends React.Component{
     this.state = {
       userName: "",
       password: "",
+      disabled: false,
+      visible: false,
     }
   }
+
+  hideToast = () => {
+    this.setState({
+      visible: false,
+    });
+  };
+
 
   register(){
     const {navigate} = this.props.navigation;
     const { userName, password } = this.state;
+    this.setState({disabled:true});
 
     NativeModules.RegisterModule.registerToServer(userName, password)
       .then(function(test) {
-        alert("Register Success!"),
-        navigate("CallScreen")
-      }).catch(() => 
+        navigate("CallScreen",{userName}),
+        this.setState({disabled:false});
+      })
+      .catch(() => 
       { 
-        alert("Register Fail!") 
+        this.setState(
+          {visible: true,disabled:false },
+          () => {this.hideToast();},
+        )
       });    
   }
 
 
   render(){    
   return (
-    <View style = {styles.container}>
+    <ScrollView style = {styles.container}>
+       <Toast visible={this.state.visible} message="Success!" />
+
       <View style = {styles.logoContainer}>
         <Image style = {styles.logo}
-            source={require('../Components/images/callapplogo.png')}>
+            source={require('../Components/images/hatch.png')}>
         </Image>
       </View>
       <TextInput style={styles.input} placeholder="Username" keyboardType= "email-address" 
@@ -52,10 +82,10 @@ export default class App extends React.Component{
           onChangeText={(text) => this.setState({password: text})}
       />
 
-      <TouchableOpacity style={styles.buttonContainer} onPress={this.register.bind(this)}>
+      <TouchableOpacity disabled={this.state.disabled} style={styles.buttonContainer} onPress={this.register.bind(this)}>
             <Text style = {styles.buttonText}>SIGN IN</Text>
       </TouchableOpacity>
-    </View>
+    </ScrollView>
   );
 }
 }
@@ -64,17 +94,17 @@ const styles = StyleSheet.create({
   container: {
     flex:1,
     flexDirection: 'column',
-    justifyContent: 'center',
     backgroundColor: 'rgb(32,53,70)',
   },
   logoContainer: {
-    alignItems: 'center'
+    alignItems: 'center',
+    marginTop: 30
   },
   logo: {
     //alignItems: 'center',
     justifyContent: 'center',
-    width: 128,
-    height: 56,
+    width: 160,
+    height: 160,
     marginBottom: 20,
     borderRadius: 100,
   },
@@ -107,15 +137,20 @@ const styles = StyleSheet.create({
     padding: 20
   },
   input: {
-    height: 40,
+    height: 50,
     backgroundColor: 'rgba(255,255,255,0.2)',
     paddingHorizontal: 10,
     color: '#FFF',
-    marginBottom: 20
+    marginBottom: 20,
+    borderRadius: 50
   },
   buttonContainer: {
     backgroundColor: '#f7c744',
-    paddingVertical: 15
+    paddingVertical: 15,
+    borderRadius: 50,
+    width: 250,
+    marginLeft: 50,
+    marginTop: 40
   },
   buttonText: {
     textAlign: 'center',

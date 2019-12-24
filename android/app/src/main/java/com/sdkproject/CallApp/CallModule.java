@@ -1,6 +1,8 @@
 package com.sdkproject.CallApp;
 
+import android.media.AudioManager;
 import android.util.Log;
+import android.view.View;
 
 import androidx.annotation.NonNull;
 
@@ -14,6 +16,10 @@ import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
+import com.facebook.react.uimanager.SimpleViewManager;
+import com.facebook.react.uimanager.ThemedReactContext;
+import com.facebook.react.uimanager.annotations.ReactProp;
+import com.facebook.react.uimanager.events.RCTEventEmitter;
 import com.genband.mobile.NotificationStates;
 import com.genband.mobile.OnCompletionListener;
 import com.genband.mobile.RegistrationApplicationListener;
@@ -28,6 +34,7 @@ import com.genband.mobile.api.services.call.OutgoingCallCreateInterface;
 import com.genband.mobile.api.services.call.OutgoingCallInterface;
 import com.genband.mobile.api.utilities.MobileError;
 import com.genband.mobile.api.utilities.exception.MobileException;
+import com.genband.mobile.core.webrtc.view.VideoView;
 import com.genband.mobile.impl.services.call.CallState;
 import com.genband.mobile.impl.services.call.MediaAttributes;
 
@@ -40,15 +47,18 @@ public class CallModule extends ReactContextBaseJavaModule implements CallApplic
     public boolean test;
     CallServiceInterface callService;
     CallInterface call;
-    private ReactContext mReactContext;
+    private Promise promise;
+    static ReactContext mReactContext;
     private ServiceProvider serviceProvider;
     public boolean incomingCall=false;
-
+    private CallStateListener mcallListener;
+    public boolean success;
+    VideoView localVideoView;
+    VideoView remoteVideoView;
 
     public CallModule(@NonNull ReactApplicationContext reactContext) {
         super(reactContext);
         mReactContext = reactContext;
-
 
         serviceProvider = ServiceProvider.getInstance(getReactApplicationContext());
         callService = serviceProvider.getCallService();
@@ -111,9 +121,9 @@ public class CallModule extends ReactContextBaseJavaModule implements CallApplic
         callService.createOutgoingCall(terminatorAddress, this, new OutgoingCallCreateInterface() {
             @Override
             public void callCreated(OutgoingCallInterface callInterface) {
-                call = callInterface;
-                callInterface.establishAudioCall();
-                Log.i("callCreate","call");
+                    call = callInterface;
+                    callInterface.establishAudioCall();
+                    Log.i("callCreate","call");
             }
             @Override
             public void callCreationFailed(MobileError error) {
@@ -123,17 +133,22 @@ public class CallModule extends ReactContextBaseJavaModule implements CallApplic
     }
 
     @ReactMethod
-    public void callStart(){
-        IncomingCallInterface ıncomingCallInterface = (IncomingCallInterface) ServiceProvider.getInstance(getReactApplicationContext()).getCallService().getActiveCalls().firstObject();
-        this.call = ıncomingCallInterface;
-        ıncomingCallInterface.acceptCall(false);
-    }
+    public void videoCallExample(String name) {
+        String terminatorAddress = name ;
+        Log.i("terminatoradress",terminatorAddress);
 
-    @ReactMethod
-    public void stopCall() throws MobileException {
-        if(call != null) {
-            call.endCall();
-        }
+        callService.createOutgoingCall(terminatorAddress, this, new OutgoingCallCreateInterface() {
+            @Override
+            public void callCreated(OutgoingCallInterface callInterface) {
+                call = callInterface;
+                callInterface.establishCall(true);
+                Log.d("Funda","VideoCall");
+            }
+            @Override
+            public void callCreationFailed(MobileError error) {
+                Log.d("Funda","CallFAİL");
+            }
+        });
     }
 
     @ReactMethod
@@ -143,12 +158,32 @@ public class CallModule extends ReactContextBaseJavaModule implements CallApplic
         incomingCall = true;
 
         WritableMap params = Arguments.createMap();
-        params.putString("callerName",call.getCallerName());
+        params.putString("callerName", call.getCallerName());
 
-        Log.i("fnd", "incomingcall");
-        Log.i("funda",call.getCallerAddress());
+        if(ıncomingCallInterface.canReceiveVideo()){
+            params.putString("callId",call.getCallId());
+            sendVideoEvent(mReactContext, params);
+            Log.i("fnd", "videoincomingcall");
 
-        sendEvent(mReactContext, params);
+        }else{
+            sendEvent(mReactContext, params);
+            Log.i("fnd", "audioincomingcall");
+        }
+    }
+
+    @ReactMethod
+    public void callStart(){
+        IncomingCallInterface ıncomingCallInterface = (IncomingCallInterface) ServiceProvider.getInstance(getReactApplicationContext()).getCallService().getActiveCalls().firstObject();
+        this.call = ıncomingCallInterface;
+
+        if(ıncomingCallInterface.canSendVideo()){
+            ıncomingCallInterface.acceptCall(true);
+            Log.i("funda","video");
+        }
+        else {
+            ıncomingCallInterface.acceptCall(false);
+            Log.i("funda","audio");
+        }
     }
 
     private void sendEvent(ReactContext reactContext, @Nullable WritableMap params) {
@@ -156,17 +191,79 @@ public class CallModule extends ReactContextBaseJavaModule implements CallApplic
                 .emit("incomingCall", params);
     }
 
+    private void sendVideoEvent(ReactContext reactContext, @Nullable WritableMap params) {
+        reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                .emit("videoIncomingCall", params);
+    }
+
+    @ReactMethod
+    public void mute(){
+        if(call.isMute()){
+            call.unMute();
+            success=true;
+        }else{
+            call.mute();
+            success=true;
+        }
+    }
+
+    @ReactMethod
+    public void hold(){
+        if(call.getCallState().getType().equals(CallState.Type.ON_DOUBLE_HOLD)||
+                call.getCallState().getType().equals(CallState.Type.ON_HOLD))
+        {
+            call.unHoldCall();
+            success=true;
+        }
+        else{
+            call.holdCall();
+            success=true;
+        }
+    }
+
+    @ReactMethod
+    public void speaker(){
+        AudioManager audioManager = (AudioManager) getReactApplicationContext().getSystemService(getReactApplicationContext().AUDIO_SERVICE);
+        if(audioManager.isSpeakerphoneOn()){
+            audioManager.setSpeakerphoneOn(false);
+        }
+        else {
+            audioManager.setSpeakerphoneOn(true);
+        }
+    }
+
+    @ReactMethod
+    public void transferCall(){
+        AudioManager audioManager = (AudioManager) getReactApplicationContext().getSystemService(getReactApplicationContext().AUDIO_SERVICE);
+        audioManager.setSpeakerphoneOn(false);
+
+        call.transferCall("adem3@spidr.com");
+    }
+
+    @ReactMethod
+    public void stopCall() throws MobileException {
+        if(call != null) {
+            call.endCall();
+        }
+    }
+
+
     @Override
     public void callStatusChanged(CallInterface callInterface, CallState callState) {
 
         this.call = callInterface;
 
-        WritableMap params = Arguments.createMap();
-        params.putString("callState",callState.getType().toString());
-
-        sendEvent(mReactContext, params);
-
         Log.i("callState", callState.getType().toString());
+
+        if (mcallListener != null) {
+            mcallListener.callStateChange(callInterface, callState,localVideoView);
+            mcallListener.callStateChange(callInterface, callState,remoteVideoView);
+        }
+
+        WritableMap params = Arguments.createMap();
+        params.putString("callstate",callState.getType().toString());
+
+        sendState(mReactContext, params);
 
         switch (callState.getType()) {
             case INITIAL:
@@ -205,6 +302,21 @@ public class CallModule extends ReactContextBaseJavaModule implements CallApplic
             default:
                 break;
         }
+    }
+
+    private void sendState(ReactContext reactContext, @Nullable WritableMap params) {
+        reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                .emit("callstate", params);
+    }
+
+    private void sendEventState(ReactContext reactContext, @Nullable WritableMap params) {
+        reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                .emit("event", params);
+    }
+
+    private void sendEventFailState(ReactContext reactContext, @Nullable WritableMap params) {
+        reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                .emit("failEvent", params);
     }
 
     @Override
@@ -289,52 +401,82 @@ public class CallModule extends ReactContextBaseJavaModule implements CallApplic
 
     @Override
     public void muteCallSucceed(CallInterface callInterface) {
+        WritableMap params = Arguments.createMap();
+        params.putBoolean("callstate",success);
 
+        sendEventState(mReactContext, params);
     }
 
     @Override
     public void muteCallFailed(CallInterface callInterface, MobileError mobileError) {
+        WritableMap params = Arguments.createMap();
+        params.putBoolean("callstate",success);
 
+        sendEventFailState(mReactContext, params);
     }
 
     @Override
     public void unMuteCallSucceed(CallInterface callInterface) {
+        WritableMap params = Arguments.createMap();
+        params.putBoolean("callstate",success);
 
+        sendEventState(mReactContext, params);
     }
 
     @Override
     public void unMuteCallFailed(CallInterface callInterface, MobileError mobileError) {
+        WritableMap params = Arguments.createMap();
+        params.putBoolean("callstate",success);
 
+        sendEventFailState(mReactContext, params);
     }
 
     @Override
     public void holdCallSucceed(CallInterface callInterface) {
+        WritableMap params = Arguments.createMap();
+        params.putBoolean("callstate",success);
 
+        sendEventState(mReactContext, params);
     }
 
     @Override
     public void holdCallFailed(CallInterface callInterface, MobileError mobileError) {
+        WritableMap params = Arguments.createMap();
+        params.putBoolean("callstate",success);
 
+        sendEventFailState(mReactContext, params);
     }
 
     @Override
     public void transferCallSucceed(CallInterface callInterface) {
+        WritableMap params = Arguments.createMap();
+        params.putBoolean("callstate",success);
 
+        sendEventState(mReactContext, params);
     }
 
     @Override
     public void transferCallFailed(CallInterface callInterface, MobileError mobileError) {
+        WritableMap params = Arguments.createMap();
+        params.putBoolean("callstate",success);
 
+        sendEventFailState(mReactContext, params);
     }
 
     @Override
     public void unHoldCallSucceed(CallInterface callInterface) {
+        WritableMap params = Arguments.createMap();
+        params.putBoolean("callstate",success);
 
+        sendEventState(mReactContext, params);
     }
 
     @Override
     public void unHoldCallFailed(CallInterface callInterface, MobileError mobileError) {
+        WritableMap params = Arguments.createMap();
+        params.putBoolean("callstate",success);
 
+        sendEventFailState(mReactContext, params);
     }
 
     @Override
